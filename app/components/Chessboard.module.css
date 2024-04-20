@@ -1,0 +1,28 @@
+.chessboardWrapper{
+    box-shadow: 3px 3px 10px rgb(0, 0, 0, 0.4);
+}
+.chessboard {
+    width: 700px; 
+    aspect-ratio: 1;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+}
+.lightSquare{
+    background-color: rgba(250, 235, 215, 0.922);
+
+}
+.darkSquare{
+    background-color: rgb(145, 60, 60);
+
+}
+.field{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.chesspiece{
+    width: 95%;
+    height: 95%;
+    border-radius: 50%;
+}
