@@ -2,6 +2,7 @@
 import React, { MouseEvent, useState } from "react";
 import classes from './Chessboard.module.css';
 import { Board } from '../utils/board'
+import { ChessRules } from "../utils/ChessRules";
 import Bpawn from "@/public/p-black.svg";
 import Brook from "@/public/r-black.svg";
 import Bknight from "@/public/n-black.svg";
@@ -22,10 +23,12 @@ export function Chessboard() {
     const [selectedPiece, setSelectedPiece] = useState<{ row: number; col: number; } | null>(null);
     const [dragging, setDragging] = useState(false);
     const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 });
+    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
     const [gameStatus, setGameStatus] = useState("ongoing");
 
     
-    const handleMove = (from: { row: number; col: number; }, to: { row: number; col: number; }) => {
+    /* const handleMove = (from: { row: number; col: number; }, to: { row: number; col: number; }) => {
         try {
             if (currentBoard.isMoveLegal(from, to)) {
                 const newFields = currentBoard.fields.map(row => row.slice()); // Deep copy of fields array
@@ -41,10 +44,10 @@ export function Chessboard() {
         } catch (error) {
             console.error("Error moving piece:", error);
         }
-    };
+    }; */
 
     // Function to handle clicking on a piece to make a move (NOT WORKING AS INTENDED YET)
-    const handleSquareClick = (rowIndex: number, columnIndex: number) => {
+    /* const handleSquareClick = (rowIndex: number, columnIndex: number) => {
         const clickedPosition = { row: rowIndex, col: columnIndex };
         const clickedPiece = currentBoard.fields[rowIndex][columnIndex];
     
@@ -75,33 +78,45 @@ export function Chessboard() {
                 console.log("Piece selected:", clickedPosition);
             }
         }
-    };
+    };*/
     
     
     const startDrag = (e: MouseEvent<HTMLDivElement>, rowIndex: number, columnIndex: number) => {
-        e.preventDefault(); // Proper usage of the event
+        e.preventDefault(); // Stop any default behavior, like text selection
         console.log("Mouse down on piece at:", rowIndex, columnIndex);
         setSelectedPiece({ row: rowIndex, col: columnIndex });
         setDragging(true);
+        const pieceElement = e.target as HTMLDivElement;
+    
+        // Ensures right dimensions and initial position
+        const rect = pieceElement.getBoundingClientRect();
+        const offsetX = e.clientX - rect.left - rect.width / 2;
+        const offsetY = e.clientY - rect.top - rect.height / 2;
+    
+        setDragOffset({ x: offsetX, y: offsetY });
+    
         setDragPosition({
-            x: e.clientX - 45 / 2, // Adjust for piece size to center on cursor
-            y: e.clientY - 45 / 2
+            x: e.clientX - rect.width / 2,
+            y: e.clientY - rect.height / 2
         });
     };
-
-    // Handle the piece movement
-    const onDrag = (e: MouseEvent<HTMLDivElement>) => { // Adjust type if necessary
+    
+    // Handle movement of piece during drag
+    const onDrag = (e: MouseEvent<HTMLDivElement>) => {
         if (dragging) {
-            setDragPosition({ x: e.clientX, y: e.clientY });
+            // Apply the stored offset to keep the piece centered
+            setDragPosition({
+                x: e.clientX - dragOffset.x,
+                y: e.clientY - dragOffset.y
+            });
         }
     };
 
     // Handle the release of the piece
-    const endDrag = (e: MouseEvent<HTMLDivElement>, rowIndex: number, columnIndex: number) => { // Adjust type if necessary
+    const endDrag = (e: MouseEvent<HTMLDivElement>) => { // Adjust type if necessary
         if (dragging && selectedPiece) {
             // dropping logic here
             setDragging(false);
-            console.log("Dragged to:", rowIndex, columnIndex);
         }
     };
     
@@ -133,7 +148,6 @@ export function Chessboard() {
                             {field !== 0 && <div 
                             className={classes.chesspiece}
                             style={isSelected && dragging ? {
-                                position: 'fixed', // Use fixed to position relative to the viewport
                                 left: `${dragPosition.x}px`,
                                 top: `${dragPosition.y}px`,
                                 opacity: 0.8,
